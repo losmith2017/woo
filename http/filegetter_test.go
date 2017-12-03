@@ -1,12 +1,12 @@
 package http
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -37,12 +37,13 @@ func TestFileGetter_Write(t *testing.T) {
 		t.Fatalf("response.StatusCode = %s", resp.StatusCode)
 	}
 
-	fsize := resp.Header.Get("Content-Length")
-	fmt.Println(fsize)
-
+	fsize, err := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
 	fstat, err := os.Stat(tmpfile.Name())
 	if int64(len(fdata)) != fstat.Size() {
 		t.Fatalf("size = %v; want %v", fstat.Size(), len(fdata))
+	}
+	if fsize != fstat.Size() {
+		t.Fatalf("size = %v; want %v", fstat.Size(), fsize)
 	}
 
 	modstr := resp.Header.Get("Last-Modified")
@@ -50,7 +51,6 @@ func TestFileGetter_Write(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %q %s", modtime, err)
 	}
-
 	if !modtime.Equal(mtime) {
 		t.Fatalf("modtime = %v; want %v", modtime, mtime)
 	}

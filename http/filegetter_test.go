@@ -28,7 +28,7 @@ func TestFileGetter_Write(t *testing.T) {
 	defer tmpfile.Close()
 	defer os.Remove(tmpfile.Name())
 
-	fget := FileGetter{tserv.URL+"/"+fname}
+	fget := FileGetter{tserv.URL}
 	resp, err := fget.Write(tmpfile)
 	if err != nil {
 		t.Fatalf("response.StatusCode: %s err %s", resp.StatusCode, err)

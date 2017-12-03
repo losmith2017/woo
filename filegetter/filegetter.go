@@ -10,10 +10,18 @@ type HttpFileGetter struct {
 	Url string
 }
 
-func (f *HttpFileGetter) Write(w io.Writer) (*http.Response, error) {
+func (f *HttpFileGetter) Stat(w io.Writer) (*http.Response, error)  {
+	resp, err := http.Head(f.Url)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
+}
+
+func (f *HttpFileGetter) WriteTo(w io.Writer) (*http.Response, error) {
 	resp, err := http.Get(f.Url)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	defer resp.Body.Close()

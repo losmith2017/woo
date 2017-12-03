@@ -1,4 +1,4 @@
-package http
+package filegetter
 
 import (
 	"io/ioutil"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestFileGetter_Write(t *testing.T) {
+func TestHttpFileGetter_Write(t *testing.T) {
 	mtime := time.Unix(1512216000, 0).UTC()
 	fname := "woo.txt"
 	fdata := "woooooo"
@@ -28,7 +28,7 @@ func TestFileGetter_Write(t *testing.T) {
 	defer tmpfile.Close()
 	defer os.Remove(tmpfile.Name())
 
-	fget := FileGetter{tserv.URL}
+	fget := HttpFileGetter{tserv.URL}
 	resp, err := fget.Write(tmpfile)
 	if err != nil {
 		t.Fatalf("response.StatusCode: %s err %s", resp.StatusCode, err)

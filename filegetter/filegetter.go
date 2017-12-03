@@ -1,4 +1,4 @@
-package http
+package filegetter
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-type FileGetter struct {
+type HttpFileGetter struct {
 	Url string
 }
 
-func (f *FileGetter) Write(w io.Writer) (*http.Response, error) {
+func (f *HttpFileGetter) Write(w io.Writer) (*http.Response, error) {
 	resp, err := http.Get(f.Url)
 	if err != nil {
 		return resp, err

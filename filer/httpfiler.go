@@ -25,7 +25,12 @@ func (f HttpFile) Stat() (resp *http.Response, err error) {
 
 	client := &http.Client{}
 	resp, err = client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return resp, fmt.Errorf("bad response code: %d", resp.StatusCode)
 	}
@@ -42,7 +47,12 @@ func (f HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
 
 	client := &http.Client{}
 	resp, err = client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return resp, fmt.Errorf("bad response code: %d", resp.StatusCode)
 	}

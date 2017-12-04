@@ -30,11 +30,11 @@ func setupTmpfile(t *testing.T,  prefix string) (*os.File,  func(t *testing.T,  
 	if err != nil {
 		t.Fatal(err)
 	}
-    return tmpfile, func(t *testing.T, f *os.File) {
+	return tmpfile, func(t *testing.T, f *os.File) {
 		t.Log("teardown tmpfile")
-	    f.Close()
-	    os.Remove(f.Name())
-    }
+		f.Close()
+		os.Remove(f.Name())
+	}
 }
 
 func getGithubToken() (string, error) {
@@ -47,8 +47,8 @@ func getGithubToken() (string, error) {
 }
 
 func TestHttpFiler_Get(t *testing.T) {
-    tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
-    defer teardownTmpfile(t, tmpfile)
+	tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
+	defer teardownTmpfile(t, tmpfile)
 
 	fdata := "woooooo"
 	tserv, teardownServer := setupServer(t, fdata)
@@ -69,8 +69,8 @@ func TestHttpFiler_Get(t *testing.T) {
 
 
 func TestHttpFiler_Authenticate(t *testing.T) {
-    tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
-    defer teardownTmpfile(t, tmpfile)
+	tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
+	defer teardownTmpfile(t, tmpfile)
 
 	token, err := getGithubToken()
 	if err != nil {

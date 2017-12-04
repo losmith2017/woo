@@ -16,7 +16,7 @@ type HttpFile struct {
 	Header map[string][]string
 }
 
-func (f HttpFile) Stat() (resp *http.Response, err error) {
+func (f *HttpFile) Stat() (resp *http.Response, err error) {
 	req, err := http.NewRequest("HEAD", f.Url, nil)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (f HttpFile) Stat() (resp *http.Response, err error) {
 	return resp, err
 }
 
-func (f HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
+func (f *HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
 	req, err := http.NewRequest("GET", f.Url, nil)
 	if err != nil {
 		return nil, err

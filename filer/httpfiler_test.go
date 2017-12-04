@@ -55,7 +55,7 @@ func TestHttpFiler_Get(t *testing.T) {
 	defer teardownServer(t, tserv)
 
 	hdr := map[string][]string{}
-	var filer HttpFiler = HttpFile{tserv.URL, hdr }
+	var filer HttpFiler = &HttpFile{tserv.URL, hdr }
 	_, err := filer.Get(tmpfile)
 	if err != nil {
 		t.Fatalf("write failed %", err)
@@ -82,7 +82,7 @@ func TestHttpFiler_Authenticate(t *testing.T) {
 		"Accept": {"application/vnd.github.v3+json"},
 	}
 
-	var filer HttpFiler = HttpFile{"https://api.github.com/user/repos", hdr }
+	var filer HttpFiler = &HttpFile{"https://api.github.com/user/repos", hdr }
 	_, err = filer.Get(tmpfile)
 	if err != nil {
 		t.Fatalf("write failed %v", err)

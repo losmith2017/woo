@@ -12,17 +12,29 @@ import (
 	"time"
 )
 
-func setupServer(t *testing.T, fdata string) (*httptest.Server, func(t *testing.T)) {
+func setupServer(t *testing.T, fdata string) (*httptest.Server, func(t *testing.T, s *httptest.Server)) {
 	t.Log("setup server")
 	mtime := time.Unix(1512216000, 0).UTC()
 	fname := "woo.txt"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeContent(w, r, fname, mtime, strings.NewReader(fdata))
 	}))
-	return server, func(t *testing.T) {
+	return server, func(t *testing.T, s *httptest.Server) {
 		t.Log("teardown server")
-		server.Close()
+		s.Close()
 	}
+}
+
+func setupTmpfile(t *testing.T,  prefix string) (*os.File,  func(t *testing.T,  f *os.File)) {
+	tmpfile, err := ioutil.TempFile("", prefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+    return tmpfile, func(t *testing.T, f *os.File) {
+		t.Log("teardown tmpfile")
+	    f.Close()
+	    os.Remove(f.Name())
+    }
 }
 
 func getGithubToken() (string, error) {
@@ -35,20 +47,16 @@ func getGithubToken() (string, error) {
 }
 
 func TestHttpFiler_Get(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "filegetter_test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tmpfile.Close()
-	defer os.Remove(tmpfile.Name())
+    tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
+    defer teardownTmpfile(t, tmpfile)
 
 	fdata := "woooooo"
 	tserv, teardownServer := setupServer(t, fdata)
-	defer teardownServer(t)
+	defer teardownServer(t, tserv)
 
 	hdr := map[string][]string{}
 	var filer HttpFiler = HttpFile{tserv.URL, hdr }
-	_, err = filer.Get(tmpfile)
+	_, err := filer.Get(tmpfile)
 	if err != nil {
 		t.Fatalf("write failed %", err)
 	}
@@ -61,12 +69,8 @@ func TestHttpFiler_Get(t *testing.T) {
 
 
 func TestHttpFiler_Authenticate(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "filegetter_test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tmpfile.Close()
-	defer os.Remove(tmpfile.Name())
+    tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
+    defer teardownTmpfile(t, tmpfile)
 
 	token, err := getGithubToken()
 	if err != nil {

@@ -58,7 +58,7 @@ func TestHttpFiler_WriteTo(t *testing.T) {
 	var filer HttpFiler = &HttpFile{tserv.URL, hdr }
 	_, err := filer.WriteTo(tmpfile)
 	if err != nil {
-		t.Fatalf("write failed %", err)
+		t.Fatalf("write failed %v", err)
 	}
 
 	fstat, err := os.Stat(tmpfile.Name())

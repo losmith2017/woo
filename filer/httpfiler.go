@@ -17,14 +17,13 @@ type HttpFile struct {
 }
 
 func (f HttpFile) Stat() (resp *http.Response, err error) {
-	client := &http.Client{}
-
 	req, err := http.NewRequest("HEAD", f.Url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = f.Header
 
+	client := &http.Client{}
 	resp, err = client.Do(req)
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -35,14 +34,13 @@ func (f HttpFile) Stat() (resp *http.Response, err error) {
 }
 
 func (f HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
-	client := &http.Client{}
-
 	req, err := http.NewRequest("GET", f.Url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header = f.Header
 
+	client := &http.Client{}
 	resp, err = client.Do(req)
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

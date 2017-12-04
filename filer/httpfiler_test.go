@@ -85,7 +85,7 @@ func TestHttpFiler_Authenticate(t *testing.T) {
 	var filer HttpFiler = HttpFile{"https://api.github.com/user/repos", hdr }
 	_, err = filer.Get(tmpfile)
 	if err != nil {
-		t.Fatalf("write failed %", err)
+		t.Fatalf("write failed %v", err)
 	}
 
 	resp, err := filer.Stat()

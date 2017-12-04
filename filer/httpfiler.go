@@ -7,7 +7,7 @@ import (
 )
 
 type HttpFiler interface {
-	Get(w io.Writer) (resp *http.Response, err error)
+	WriteTo(w io.Writer) (resp *http.Response, err error)
 	Stat() (resp *http.Response, err error)
 }
 
@@ -38,7 +38,7 @@ func (f *HttpFile) Stat() (resp *http.Response, err error) {
 	return resp, err
 }
 
-func (f *HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
+func (f *HttpFile) WriteTo(w io.Writer) (resp *http.Response, err error) {
 	req, err := http.NewRequest("GET", f.Url, nil)
 	if err != nil {
 		return nil, err

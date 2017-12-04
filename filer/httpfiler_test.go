@@ -46,7 +46,7 @@ func getGithubToken() (string, error) {
 	return fmt.Sprintf("token %s", strings.TrimSpace(string(dat))), err
 }
 
-func TestHttpFiler_Get(t *testing.T) {
+func TestHttpFiler_WriteTo(t *testing.T) {
 	tmpfile, teardownTmpfile := setupTmpfile(t, "httpfiler")
 	defer teardownTmpfile(t, tmpfile)
 
@@ -56,7 +56,7 @@ func TestHttpFiler_Get(t *testing.T) {
 
 	hdr := map[string][]string{}
 	var filer HttpFiler = &HttpFile{tserv.URL, hdr }
-	_, err := filer.Get(tmpfile)
+	_, err := filer.WriteTo(tmpfile)
 	if err != nil {
 		t.Fatalf("write failed %", err)
 	}
@@ -83,7 +83,7 @@ func TestHttpFiler_Authenticate(t *testing.T) {
 	}
 
 	var filer HttpFiler = &HttpFile{"https://api.github.com/user/repos", hdr }
-	_, err = filer.Get(tmpfile)
+	_, err = filer.WriteTo(tmpfile)
 	if err != nil {
 		t.Fatalf("write failed %v", err)
 	}

@@ -29,112 +29,175 @@
 WOO_HOME                = $(HOME)/.woo
 CACHEDIR                = $(WOO_HOME)/cache
 DISTDIR                 = $(WOO_HOME)/dist
-TEMPDIR                 = $(WOO_HOME)/tmp
 
 GOLANG_VERSION          = 1.9.2
 GOLANG_ARCHIVE          = $(CACHEDIR)/go$(GOLANG_VERSION).darwin-amd64.tar.gz
-GOLANG                  = $(DISTDIR)/go-$(GOLANG_VERSION)
+GOLANG_DESTDIR          = $(DISTDIR)/go-$(GOLANG_VERSION)
+GOLANG                  = $(GOLANG_DESTDIR)/bin/go
 
 PACKER_VERSION          = 1.1.2
 PACKER_ARCHIVE          = $(CACHEDIR)/packer_$(PACKER_VERSION)_darwin_amd64.zip
-PACKER                  = $(DISTDIR)/packer-$(PACKER_VERSION)/bin/packer
+PACKER_DESTDIR          = $(DISTDIR)/packer-$(PACKER_VERSION)
+PACKER                  = $(PACKER_DESTDIR)/bin/packer
 
 VAGRANT_VERSION         = 2.0.1
 VAGRANT_ARCHIVE         = $(CACHEDIR)/vagrant_$(VAGRANT_VERSION)_x86_64.dmg
-VAGRANT                 = /usr/local/bin/vagrant
+VAGRANT_DESTDIR         = /opt/vagrant
+VAGRANT                 = $(VAGRANT_DESTDIR)/vagrant
 
 VAULT_VERSION           = 0.9.0
 VAULT_ARCHIVE           = $(CACHEDIR)/vault_$(VAULT_VERSION)_darwin_amd64.zip
-VAULT                   = $(DISTDIR)/vault-$(VAULT_VERSION)/bin/vault
+VAULT_DESTDIR           = $(DISTDIR)/vault-$(VAULT_VERSION)
+VAULT                   = $(VAULT_DESTDIR)/bin/vault
 
 VIRTUALBOX_VERSION      = 5.2.2
 VIRTUALBOX_ARCHIVE      = $(CACHEDIR)/VirtualBox-$(VIRTUALBOX_VERSION)-119230-OSX.dmg
 VIRTUALBOX              = /Applications/VirtualBox.app
 
-ALL_TARGETS             = golang packer vagrant vault virtualbox
+BASE_TARGETS           += golang
+BASE_TARGETS           += packer
+BASE_TARGETS           += vagrant
+BASE_TARGETS           += vault
+BASE_TARGETS           += virtualbox
 
+INSTALL_TARGETS         = $(BASE_TARGETS:%=%-install)
+UNINSTALL_TARGETS       = $(BASE_TARGETS:%=%-uninstall)
+ALL_TARGETS             = $(INSTALL_TARGETS) $(UNINSTALL_TARGETS)
 
 # ------------------------------------------------------------------------
-# Driver Targets
+# Installation Driver Targets
 # ------------------------------------------------------------------------
 help:; @for i in $(ALL_TARGETS); do echo make $$i; done
-all: $(ALL_TARGETS)
-golang: dirs $(GOLANG) 
-packer: dirs $(PACKER) 
-vagrant: dirs $(VAGRANT)
-vault: dirs $(VAULT)
-virtualbox: dirs $(VIRTUALBOX)
-dirs: $(CACHEDIR) $(DISTDIR)
-
+install: $(INSTALL_TARGETS)
+uninstall: $(UNINSTALL_TARGETS)
 
 # ------------------------------------------------------------------------
-# 
+# Golang
 # ------------------------------------------------------------------------
-$(DISTDIR):
-	@echo making distribution directory... $@
-	@mkdir -p $@
+golang-install: $(GOLANG)
 
-$(CACHEDIR):
-	@echo making cache directory... $@
-	@mkdir -p $@
+golang-uninstall: 
+	@echo removing... Go $(GOLANG_VERSION)
+	@rm -rf $(GOLANG_DESTDIR)
+	@rm -f $(GOLANG_ARCHIVE)
 
-$(GOLANG_ARCHIVE):
+$(GOLANG_ARCHIVE): 
 	@echo downloading... $(@F)
+	@mkdir -p $(@D)
 	curl -L -o $@ https://redirector.gvt1.com/edgedl/go/$(@F)
 	openssl dgst -sha256 $@
 
 $(GOLANG): 
-	@echo installing... $(@F)
+	@echo installing... Go $(GOLANG_VERSION)
 	@if [ ! -f $(GOLANG_ARCHIVE) ]; then make $(GOLANG_ARCHIVE); fi
-	mkdir -p $@
-	tar -C $@ -xvf $(GOLANG_ARCHIVE)
-	mv $(@)/go/* $@
-	rm -rf $(@)/go
+	@mkdir -p $(GOLANG_DESTDIR)
+	tar -C $(GOLANG_DESTDIR) -xvf $(GOLANG_ARCHIVE)
+	mv $(GOLANG_DESTDIR)/go/* $(GOLANG_DESTDIR)
+	rm -rf $(GOLANG_DESTDIR)/go
 
-$(PACKER_ARCHIVE):
+# ------------------------------------------------------------------------
+# Packer
+# ------------------------------------------------------------------------
+packer-install: $(PACKER)
+
+packer-uninstall:
+	@echo removing... Packer $(PACKER_VERSION)
+	@rm -rf $(PACKER_DESTDIR)
+	@rm -f $(PACKER_ARCHIVE)
+
+$(PACKER_ARCHIVE): 
 	@echo downloading... $(@F)
+	@mkdir -p $(@D)
 	curl -L -o $@ https://releases.hashicorp.com/packer/$(PACKER_VERSION)/$(@F)
 	openssl dgst -sha256 $@
 
 $(PACKER): 
-	@echo installing... $(@F) $(PACKER_VERSION)
+	@echo installing... Packer $(PACKER_VERSION)
 	@if [ ! -f $(PACKER_ARCHIVE) ]; then make $(PACKER_ARCHIVE); fi
-	mkdir -p $(@D)
-	cd $(@D) && unzip $(PACKER_ARCHIVE)
+	@mkdir -p $(PACKER_DESTDIR)/bin
+	cd $(PACKER_DESTDIR)/bin && unzip $(PACKER_ARCHIVE)
+
+# ------------------------------------------------------------------------
+# Vagrant
+# ------------------------------------------------------------------------
+vagrant-install: $(VAGRANT)
+
+vagrant-uninstall:
+	@echo uninstalling... Vagrant $(VAGRANT_VERSION)
+	@if [ ! -f $(VAGRANT_ARCHIVE) ]; then make $(VAGRANT_ARCHIVE); fi
+	hdiutil attach $(VAGRANT_ARCHIVE)
+	/Volumes/Vagrant/uninstall.tool
+	hdiutil detach /Volumes/Vagrant
+	rm -f $(VAGRANT_ARCHIVE)
 
 $(VAGRANT_ARCHIVE):
-	@echo downloading... $(@F)
+	@echo downloading... Vagrant $(VAGRANT_VERSION)
+	@mkdir -p $(@D)
 	curl -L -o $@ https://releases.hashicorp.com/vagrant/$(VAGRANT_VERSION)/$(@F)
 	openssl dgst -sha256 $@
 
 $(VAGRANT): 
-	@echo installing... $(@F) $(VAGRANT_VERSION)
+	@echo installing... Vagrant $(VAGRANT_VERSION)
 	@if [ ! -f $(VAGRANT_ARCHIVE) ]; then make $(VAGRANT_ARCHIVE); fi
 	hdiutil attach $(VAGRANT_ARCHIVE)
 	sudo installer -pkg /Volumes/Vagrant/vagrant.pkg -target /Volumes/Macintosh\ HD
 	hdiutil detach /Volumes/Vagrant
 
-$(VAULT_ARCHIVE):
-	@echo downloading... $(@F)
+
+# ------------------------------------------------------------------------
+# Vault
+# ------------------------------------------------------------------------
+vault-install: $(VAULT)
+
+vault-uninstall:
+	@echo removing... Vault $(VAULT_VERSION)
+	@rm -rf $(VAULT_DESTDIR)
+	@rm -f $(VAULT_ARCHIVE)
+
+$(VAULT_ARCHIVE): 
+	@echo downloading... Vault $(VAULT_VERSION)
+	@mkdir -p $(@D)
 	curl -L -o $@ https://releases.hashicorp.com/vault/$(VAULT_VERSION)/$(@F)
 	openssl dgst -sha256 $@
 
 $(VAULT): 
-	@echo installing... $(@F) $(VAULT_VERSION)
+	@echo installing... Vault $(VAULT_VERSION)
 	@if [ ! -f $(VAULT_ARCHIVE) ]; then make $(VAULT_ARCHIVE); fi
-	mkdir -p $(@D)
-	cd $(@D) && unzip $(VAULT_ARCHIVE)
+	@mkdir -p $(VAULT_DESTDIR)/bin
+	cd $(VAULT_DESTDIR)/bin && unzip $(VAULT_ARCHIVE)
 
-$(VIRTUALBOX_ARCHIVE):
-	@echo downloading... $(@F)
-	curl -L -o $@ http://download.virtualbox.org/virtualbox/$(VIRTUALBOX_VERSION)/$(@F)
-	openssl dgst -sha256 $@
+# ------------------------------------------------------------------------
+# VirtualBox 
+# ------------------------------------------------------------------------
+virtualbox-install: $(VIRTUALBOX)
+
+virtualbox-uninstall: 
+	@if [ -d $(VIRTUALBOX) ]; then make virtualbox-shutdown-uninstall; fi
+
+virtualbox-shutdown-uninstall:
+	@echo shutdown... VirtualBox $(VIRTUALBOX_VERSION)
+	@vboxmanage list runningvms | sed -E 's/.*\{(.*)\}/\1/' | xargs -L1 -I {} VBoxManage controlvm {} savestate
+	@pkill -HUP -f /Applications/VirtualBox.app/Contents/MacOS/VirtualBox || true
+	@sudo /Library/Application\ Support/VirtualBox/LaunchDaemons/VirtualBoxStartup.sh  stop
+	@echo uninstalling... VirtualBox $(VIRTUALBOX_VERSION)
+	@if [ ! -f $(VIRTUALBOX_ARCHIVE) ]; then make $(VIRTUALBOX_ARCHIVE); fi
+	hdiutil attach $(VIRTUALBOX_ARCHIVE)
+	/Volumes/VirtualBox/VirtualBox_Uninstall.tool
+	hdiutil detach /Volumes/VirtualBox
+	rm -f $(VIRTUALBOX_ARCHIVE)
 
 $(VIRTUALBOX): 
-	@echo installing... $@ $(VIRTUALBOX_VERSION)
+	@echo installing... VirtualBox $(VIRTUALBOX_VERSION)
 	@if [ ! -f $(VIRTUALBOX_ARCHIVE) ]; then make $(VIRTUALBOX_ARCHIVE); fi
 	hdiutil attach $(VIRTUALBOX_ARCHIVE)
 	sudo installer -pkg /Volumes/VirtualBox/VirtualBox.pkg -target /Volumes/Macintosh\ HD
 	hdiutil detach /Volumes/VirtualBox
+
+$(VIRTUALBOX_ARCHIVE): 
+	@echo downloading... $(@F)
+	@mkdir -p $(@D)
+	curl -L -o $@ http://download.virtualbox.org/virtualbox/$(VIRTUALBOX_VERSION)/$(@F)
+	openssl dgst -sha256 $@
+
 
 .PHONY: all dirs golang help packer vagrant vault virtualbox 

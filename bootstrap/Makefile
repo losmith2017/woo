@@ -200,4 +200,4 @@ $(VIRTUALBOX_ARCHIVE):
 	openssl dgst -sha256 $@
 
 
-.PHONY: all dirs golang help packer vagrant vault virtualbox 
+.PHONY: $(ALL_TARGETS)

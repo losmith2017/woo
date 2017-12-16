@@ -30,6 +30,11 @@ WOO_HOME                = $(HOME)/.woo
 CACHEDIR                = $(WOO_HOME)/cache
 DISTDIR                 = $(WOO_HOME)/dist
 
+CONSUL_VERSION          = 1.0.2
+CONSUL_ARCHIVE          = $(CACHEDIR)/consul_$(CONSUL_VERSION)_darwin_amd64.zip
+CONSUL_DESTDIR          = $(DISTDIR)/consul-$(CONSUL_VERSION)
+CONSUL                  = $(CONSUL_DESTDIR)/bin/consul
+
 GOLANG_VERSION          = 1.9.2
 GOLANG_ARCHIVE          = $(CACHEDIR)/go$(GOLANG_VERSION).darwin-amd64.tar.gz
 GOLANG_DESTDIR          = $(DISTDIR)/go-$(GOLANG_VERSION)
@@ -63,6 +68,28 @@ BASE_TARGETS           += virtualbox
 INSTALL_TARGETS         = $(BASE_TARGETS:%=%-install)
 UNINSTALL_TARGETS       = $(BASE_TARGETS:%=%-uninstall)
 ALL_TARGETS             = $(INSTALL_TARGETS) $(UNINSTALL_TARGETS)
+
+# ------------------------------------------------------------------------
+# Consul
+# ------------------------------------------------------------------------
+consul-install: $(CONSUL)
+
+consul-uninstall:
+	@echo removing... Consul $(CONSUL_VERSION)
+	@rm -rf $(CONSUL_DESTDIR)
+	@rm -f $(CONSUL_ARCHIVE)
+
+$(CONSUL_ARCHIVE): 
+	@echo downloading... $(@F)
+	@mkdir -p $(@D)
+	curl -L -o $@ https://releases.hashicorp.com/consul/$(CONSUL_VERSION)/$(@F)
+	openssl dgst -sha256 $@
+
+$(CONSUL): 
+	@echo installing... Consul $(CONSUL_VERSION)
+	@if [ ! -f $(CONSUL_ARCHIVE) ]; then make $(CONSUL_ARCHIVE); fi
+	@mkdir -p $(CONSUL_DESTDIR)/bin
+	cd $(CONSUL_DESTDIR)/bin && unzip $(CONSUL_ARCHIVE)
 
 # ------------------------------------------------------------------------
 # Installation Driver Targets

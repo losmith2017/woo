@@ -12,6 +12,7 @@
 #
 # Default Installation
 #   $HOME/.woo/cache/<downloads...>
+#   $HOME/.woo/dist/consul-<version>
 #   $HOME/.woo/dist/go-<version>
 #   $HOME/.woo/dist/packer-<version>
 #   $HOME/.woo/dist/vault-<version>
@@ -19,6 +20,7 @@
 #   /Applications/VirtualBox.app
 #
 # Utilities Purpose
+#   consul, key/value store for vault secrets management
 #   golang, utilities to build, deploy, manage workspaces and services
 #   packer, create vm images to host docker engine nodes
 #   vagrant, manage vm nodes
@@ -59,6 +61,7 @@ VIRTUALBOX_VERSION      = 5.2.2
 VIRTUALBOX_ARCHIVE      = $(CACHEDIR)/VirtualBox-$(VIRTUALBOX_VERSION)-119230-OSX.dmg
 VIRTUALBOX              = /Applications/VirtualBox.app
 
+BASE_TARGETS           += consul
 BASE_TARGETS           += golang
 BASE_TARGETS           += packer
 BASE_TARGETS           += vagrant
@@ -68,6 +71,13 @@ BASE_TARGETS           += virtualbox
 INSTALL_TARGETS         = $(BASE_TARGETS:%=%-install)
 UNINSTALL_TARGETS       = $(BASE_TARGETS:%=%-uninstall)
 ALL_TARGETS             = $(INSTALL_TARGETS) $(UNINSTALL_TARGETS)
+
+# ------------------------------------------------------------------------
+# Installation Driver Targets
+# ------------------------------------------------------------------------
+help:; @for i in $(ALL_TARGETS); do echo make $$i; done
+install: $(INSTALL_TARGETS)
+uninstall: $(UNINSTALL_TARGETS)
 
 # ------------------------------------------------------------------------
 # Consul
@@ -90,13 +100,6 @@ $(CONSUL):
 	@if [ ! -f $(CONSUL_ARCHIVE) ]; then make $(CONSUL_ARCHIVE); fi
 	@mkdir -p $(CONSUL_DESTDIR)/bin
 	cd $(CONSUL_DESTDIR)/bin && unzip $(CONSUL_ARCHIVE)
-
-# ------------------------------------------------------------------------
-# Installation Driver Targets
-# ------------------------------------------------------------------------
-help:; @for i in $(ALL_TARGETS); do echo make $$i; done
-install: $(INSTALL_TARGETS)
-uninstall: $(UNINSTALL_TARGETS)
 
 # ------------------------------------------------------------------------
 # Golang

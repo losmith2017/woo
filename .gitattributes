@@ -1,1 +1,2 @@
 *.mk linguist-language=Go
+Makefile linguist-language=Go

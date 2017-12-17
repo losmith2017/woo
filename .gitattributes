@@ -1,1 +1,1 @@
-*.go linguist-language=Go
+*.mk linguist-language=Go

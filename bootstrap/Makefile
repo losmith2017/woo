@@ -138,9 +138,7 @@ $(GOLANG):
 	@echo installing... Go $(GOLANG_VERSION)
 	@if [ ! -f $(GOLANG_ARCHIVE) ]; then make $(GOLANG_ARCHIVE); fi
 	@mkdir -p $(GOLANG_DESTDIR)
-	tar -C $(GOLANG_DESTDIR) -xvf $(GOLANG_ARCHIVE)
-	mv $(GOLANG_DESTDIR)/go/* $(GOLANG_DESTDIR)
-	rm -rf $(GOLANG_DESTDIR)/go
+	tar -C $(GOLANG_DESTDIR) -xvf $(GOLANG_ARCHIVE) --strip-components 1
 
 # ------------------------------------------------------------------------
 # Gradle 
@@ -273,6 +271,50 @@ $(PACKER):
 	@if [ ! -f $(PACKER_ARCHIVE) ]; then make $(PACKER_ARCHIVE); fi
 	@mkdir -p $(PACKER_DESTDIR)/bin
 	cd $(PACKER_DESTDIR)/bin && unzip $(PACKER_ARCHIVE)
+
+# ------------------------------------------------------------------------
+# Ruby 
+# ------------------------------------------------------------------------
+# ruby website https://www.ruby-lang.org/en/
+# rbenv website https://github.com/rbenv/rbenv
+#
+# rbenv install
+#   brew install rbenv
+#
+# rbenv initialize and validate rbenv
+#   rbenv init
+#   curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-doctor | bash
+#
+# list available ruby versions
+#   rbenv install -l
+#
+# list installed versions
+#   rbenv versions
+#
+# install a ruby version
+#   rbenv install 2.3.5
+#
+# set a ruby version as default
+#   rbenv global 2.3.5
+
+# ------------------------------------------------------------------------
+# Traefik
+# ------------------------------------------------------------------------
+# website https://www.vaultproject.io
+# downloads https://www.vaultproject.io/downloads.html
+#
+# download
+#   cd .woo/cache
+#   curl -L -O https://github.com/containous/traefik/releases/download/v1.4.4/traefik_darwin-amd64
+#   openssl dgst -sha256 traefik_darwin-amd64
+#
+# install
+#   mkdir .woo/dist/traefik-1.1.4
+#   cd .woo/dist/traefik-1.1.4
+#   cp ../../cache/traefik_darwin-amd64 traefik
+#
+# uninstall
+#   rm -rf .woo/dist/traefik-1.1.4
 
 # ------------------------------------------------------------------------
 # Vagrant

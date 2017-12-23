@@ -22,11 +22,13 @@
 #   /Library/Java/JavaVirtualMachines/jdk...
 #
 # Utilities Purpose
-#   golang, utilities to build, deploy, manage workspaces and services
-#   packer, create vm images to host docker engine nodes
-#   vagrant, manage vm nodes
-#   vault, manage workspace secrets (keys, tokens, passwords)
-#   virtualbox, hypervisor to run docker nodes
+#   * golang        utilities to build, deploy, manage workspaces and services
+#   * gradle        utilities to orchestrate tasks, and used a task DAG
+#   * groovy        implement gradle custom plugins and tasks
+#   * packer        create vm images to host docker engine nodes
+#   * vagrant       manage vm nodes
+#   * vault         manage workspace secrets (keys, tokens, passwords)
+#   * virtualbox    hypervisor to run docker nodes
 # ------------------------------------------------------------------------
 
 WOO_HOME                = $(HOME)/.woo

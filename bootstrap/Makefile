@@ -11,12 +11,15 @@
 #   vagrant, yet. 
 #
 # Default Installation
+#   $HOME/.woo/bashrc
 #   $HOME/.woo/cache/<downloads...>
+#   $HOME/.woo/conf/*rc
 #   $HOME/.woo/dist/gradle-<version>
 #   $HOME/.woo/dist/groovy-<version>
 #   $HOME/.woo/dist/go-<version>
 #   $HOME/.woo/dist/packer-<version>
 #   $HOME/.woo/dist/vault-<version>
+#   $HOME/.woo/repo/<repo.git>
 #   /usr/local/opt/vagrant -> /opt/vagrant
 #   /Applications/VirtualBox.app
 #   /Library/Java/JavaVirtualMachines/jdk...
@@ -32,8 +35,11 @@
 # ------------------------------------------------------------------------
 
 WOO_HOME                = $(HOME)/.woo
+WOO_BASHRC              = $(WOO_HOME)/bashrc
 CACHEDIR                = $(WOO_HOME)/cache
+CONFDIR                 = $(WOO_HOME)/conf
 DISTDIR                 = $(WOO_HOME)/dist
+REPODIR                 = $(WOO_HOME)/repo
 
 GOLANG_WEBSITE          = https://golang.org
 GOLANG_DOWNLOADS        = https://golang.org/dl/
@@ -61,6 +67,19 @@ JDK_DOWNLOADS           = http://www.oracle.com/technetwork/java/javase/download
 JDK_VERSION             = 9.0.1
 JDK_ARCHIVE             = $(CACHEDIR)/jdk-$(JDK_VERSION)_osx-x64_bin.dmg
 JDK                     = /Library/Java/JavaVirtualMachines/jdk-$(JDK_VERSION).jdk
+
+NVM_WEBSITE             = https://github.com/creationix/nvm
+NVM_DOWNLOADS           = https://github.com/creationix/nvm#git-install
+NVM_VERSION             = v0.33.8
+NVM_REPO                = $(REPODIR)/nvm
+NVM_BASHRC              = $(CONFDIR)/nvmrc
+NVM                     = $(NVM_REPO)/nvm.sh
+
+NODE_WEBSITE            = https://nodejs.org
+NODE_DOWNLOADS          = https://nodejs.org/en/download/
+NODE_VERSION            = v8.9.3
+NODE                    = $(NVM_REPO)/versions/node/$(NODE_VERSION)/bin/node
+
 
 PACKER_WEBSITE          = https://www.packer.io
 PACKER_DOWNLOADS        = https://www.packer.io/downloads.html
@@ -94,6 +113,7 @@ BASE_TARGETS           += gradle
 BASE_TARGETS           += groovy
 BASE_TARGETS           += packer
 BASE_TARGETS           += jdk
+BASE_TARGETS           += node
 BASE_TARGETS           += vagrant
 BASE_TARGETS           += vault
 BASE_TARGETS           += virtualbox
@@ -240,6 +260,44 @@ $(JDK_ARCHIVE):
 
 jdk-checksum:
 	curl -fsSL https://www.oracle.com/webfolder/s/digest/9-0-1checksum.html | awk 'f{print;f=0} /jdk-9.0.1_osx-x64_bin/{f=1}'
+
+# ------------------------------------------------------------------------
+# Node
+# ------------------------------------------------------------------------
+node:
+	@echo "Component : Node"
+	@echo "Version   : $(NODE_VERSION)"
+	@echo "Install   : $(NODE)"
+	@echo "Website   : $(NODE_WEBSITE)"
+	@echo "Downloads : $(NODE_DOWNLOADS)"
+	@echo "Targets   : node-install node-uninstall"
+
+node-install: $(NVM) $(NVM_BASHRC) $(NODE)
+
+node-uninstall: 
+	@echo uninstalling... NVM $(NVM_VERSION)
+	rm -rf $(NVM_REPO)
+	rm -rf $(NVM_BASHRC)
+
+$(NODE):
+	@echo install... Node $(NODE_VERSION)
+	(source $(NVM_BASHRC) &&  nvm install $(NODE_VERSION) && nvm alias default $(NODE_VERSION))
+
+$(NVM_BASHRC):
+	@echo initializing... NVM $(NVM_VERSION) $@
+	@echo "export NVM_DIR=$(NVM_REPO)" > $@
+	@echo '[ -s "$$NVM_DIR/nvm.sh" ] && source "$$NVM_DIR/nvm.sh"' >> $@
+	@echo '[ -s "$$NVM_DIR/bash_completion" ] && source "$$NVM_DIR/bash_completion"' >> $@
+
+$(NVM_REPO):
+	@mkdir -p $(@D)
+	cd $(@D) && git clone https://github.com/creationix/nvm.git 
+
+$(NVM):
+	@echo installing... NVM $(NVM_VERSION)
+	@if [ ! -f $(NVM) ]; then make $(NVM_REPO); fi
+	cd $(@D) && git checkout $(NVM_VERSION)
+	@if [ ! -f $(NVM_BASHRC) ]; then make $(NVM_BASHRC); fi
 
 # ------------------------------------------------------------------------
 # Packer
@@ -424,6 +482,15 @@ $(VIRTUALBOX_ARCHIVE):
 	@mkdir -p $(@D)
 	curl -L -o $@ http://download.virtualbox.org/virtualbox/$(VIRTUALBOX_VERSION)/$(@F)
 	openssl dgst -sha256 $@
+
+# ------------------------------------------------------------------------
+# Woorc
+# ------------------------------------------------------------------------
+woo-bashrc: $(WOO_BASHRC)
+
+$(WOO_BASHRC):
+	@echo initialize... $@
+	@echo 'for i in `find $$WOO_HOME/conf -name \*rc` ; do echo $$i; source $$i; done' > $@
 
 
 .PHONY: $(ALL_TARGETS)

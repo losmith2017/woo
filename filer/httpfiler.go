@@ -1,4 +1,4 @@
-package filer
+package url
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 type HttpFiler interface {
-	WriteTo(w io.Writer) (resp *http.Response, err error)
+	Get(w io.Writer) (resp *http.Response, err error)
 	Stat() (resp *http.Response, err error)
 }
 
@@ -38,7 +38,7 @@ func (f *HttpFile) Stat() (resp *http.Response, err error) {
 	return resp, err
 }
 
-func (f *HttpFile) WriteTo(w io.Writer) (resp *http.Response, err error) {
+func (f *HttpFile) Get(w io.Writer) (resp *http.Response, err error) {
 	req, err := http.NewRequest("GET", f.Url, nil)
 	if err != nil {
 		return nil, err
@@ -57,6 +57,11 @@ func (f *HttpFile) WriteTo(w io.Writer) (resp *http.Response, err error) {
 		return resp, fmt.Errorf("bad response code: %d", resp.StatusCode)
 	}
 
-	_, err = io.Copy(w, resp.Body)
+	bytes, err := io.Copy(w, resp.Body)
+	fmt.Printf("total bytes: %d\n", bytes)
 	return resp, err
 }
+
+
+
+// https://coderwall.com/p/uz2noa/fast-parallel-downloads-in-golang-with-accept-ranges-and-goroutines
